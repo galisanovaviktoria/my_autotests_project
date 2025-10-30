@@ -1,0 +1,35 @@
+name: CI — pytest Selenium
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run tests
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+          UI_USER: ${{ secrets.UI_USER }}
+          UI_PASS: ${{ secrets.UI_PASS }}
+          CI: "true"
+        run: |
+          mkdir -p reports
+          pytest -n auto
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-report
+          path: reports/report.html
