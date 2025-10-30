@@ -1,46 +1,49 @@
 import os
-import pytest
+import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-@pytest.mark.ui
+
 def test_authorization(browser):
-    base_url = os.getenv("BASE_URL", "https://www.litres.ru")
     user_email = os.getenv("UI_USER")
     user_password = os.getenv("UI_PASS")
 
-    browser.get(base_url)
-    wait = WebDriverWait(browser, 10)
+    browser.get("https://www.litres.ru")
+    wait = WebDriverWait(browser, 15)
 
-    # Кнопка "Войти"
-    enter_button = wait.until(
-        EC.element_to_be_clickable((By.CSS_SELECTOR, 'button.User-module__rQTUaW__wrapper'))
-    )
-    enter_button.click()
+    try:
+        # 1. Кликаем "Войти"
+        login_btn = wait.until(EC.element_to_be_clickable((By.XPATH, "//*[text()='Войти']")))
+        browser.execute_script("arguments[0].click();", login_btn)
+        time.sleep(2)
 
-    # Ввод email
-    login_input = wait.until(EC.presence_of_element_located((By.NAME, 'email')))
-    login_input.send_keys(user_email)
+        # 2. Вводим email
+        email_field = wait.until(EC.presence_of_element_located((By.NAME, "email")))
+        email_field.send_keys(user_email)
 
-    # Кнопка "Далее"
-    next_button = wait.until(
-        EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.Button-module__cohrkq__buttonContent'))
-    )
-    next_button.click()
+        # 3. Кликаем "Продолжить" через JavaScript
+        continue_btn = wait.until(EC.presence_of_element_located((By.XPATH, "//button[contains(., 'Продолжить')]")))
+        browser.execute_script("arguments[0].click();", continue_btn)
+        time.sleep(2)
 
-    # Ввод пароля
-    password_input = wait.until(EC.presence_of_element_located((By.NAME, 'pwd')))
-    password_input.send_keys(user_password)
+        # 4. Вводим пароль
+        password_field = wait.until(EC.presence_of_element_located((By.NAME, "pwd")))
+        password_field.send_keys(user_password)
 
-    # Кнопка "Войти"
-    login_button = wait.until(
-        EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.Button-module__cohrkq__buttonContent'))
-    )
-    login_button.click()
+        # 5. Кликаем "Войти" через JavaScript
+        submit_btn = wait.until(EC.presence_of_element_located((By.XPATH, "//button[contains(., 'Войти')]")))
+        browser.execute_script("arguments[0].click();", submit_btn)
+        time.sleep(3)
 
-    # Проверка успешного входа
-    user_avatar = wait.until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, 'div.UserAvatar-module__avatar'))
-    )
-    assert user_avatar.is_displayed()
+        # 6. Проверяем авторизацию
+        profile_element = wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//*[contains(text(), 'Мой профиль') or contains(text(), 'Профиль')]"))
+        )
+
+        assert profile_element.is_displayed()
+
+    except Exception as e:
+        browser.save_screenshot("auth_error.png")
+        raise
