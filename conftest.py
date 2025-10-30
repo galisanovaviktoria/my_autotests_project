@@ -2,7 +2,6 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 
 
 @pytest.fixture
@@ -14,10 +13,9 @@ def browser():
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920,1080")
     chrome_options.add_argument("--disable-extensions")
-    chrome_options.add_argument("--disable-software-rasterizer")
 
-    # Используем webdriver-manager для автоматической установки драйвера
-    service = Service(ChromeDriverManager().install())
+    # Используем системный chromedriver
+    service = Service("/usr/bin/chromedriver")
     driver = webdriver.Chrome(service=service, options=chrome_options)
     driver.implicitly_wait(10)
 
