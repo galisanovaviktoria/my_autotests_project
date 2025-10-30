@@ -16,8 +16,6 @@ jobs:
           python-version: '3.11'
       - name: Install Chrome
         uses: browser-actions/setup-chrome@v1
-        with:
-          chrome-version: stable
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -28,10 +26,10 @@ jobs:
           UI_PASS: ${{ secrets.UI_PASS }}
         run: |
           mkdir -p reports
-          pytest --html=reports/report.html
+          pytest --html=reports/report.html --self-contained-html
       - name: Upload HTML report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: html-report
-          path: reports/report.html
+          path: reports/
